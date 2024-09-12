@@ -1,0 +1,18 @@
+0 verbose cli /opt/homebrew/Cellar/node/22.6.0/bin/node /opt/homebrew/lib/node_modules/npm/bin/npm-cli.js
+1 info using npm@10.8.2
+2 info using node@v22.6.0
+3 silly config load:file:/opt/homebrew/lib/node_modules/npm/npmrc
+4 silly config load:file:/Users/ates/Desktop/TuncerBytee/learn-something-backend/.npmrc
+5 silly config load:file:/Users/ates/.npmrc
+6 silly config load:file:/opt/homebrew/etc/npmrc
+7 verbose title npm exec ts-node src/scripts/updateUsers.ts
+8 verbose argv "exec" "--" "ts-node" "src/scripts/updateUsers.ts"
+9 verbose logfile logs-max:10 dir:/Users/ates/Desktop/TuncerBytee/learn-something-backend/C:UsersmynameAppDataRoamingnpm-cache/_logs/2024-09-12T17_32_07_799Z-
+10 verbose logfile /Users/ates/Desktop/TuncerBytee/learn-something-backend/C:UsersmynameAppDataRoamingnpm-cache/_logs/2024-09-12T17_32_07_799Z-debug-0.log
+11 silly logfile done cleaning log files
+12 verbose cwd /Users/ates/Desktop/TuncerBytee/learn-something-backend
+13 verbose os Darwin 23.5.0
+14 verbose node v22.6.0
+15 verbose npm  v10.8.2
+16 verbose exit 0
+17 info ok
