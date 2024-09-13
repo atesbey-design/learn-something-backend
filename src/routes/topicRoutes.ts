@@ -1,6 +1,7 @@
 import express, { Request, Response } from 'express';
 import Topic from '../models/Topic';
 import Category from '../models/Category';
+import User from '../models/User'; // Add this import
 import { authMiddleware } from '../middleware/auth';
 import mongoose from 'mongoose';
 
@@ -55,17 +56,24 @@ router.post('/', authMiddleware, async (req: Request, res: Response) => {
 });
 
 // Yeni toplu topic ekleme endpoint'i
-router.post('/bulk', async (req, res) => {
+router.post('/bulk', authMiddleware, async (req: Request, res: Response) => {
   try {
     const topics = req.body;
+    const userId = req.userId;
+
     if (!Array.isArray(topics)) {
       return res.status(400).json({ message: 'Input should be an array of topics' });
     }
 
-    const savedTopics = await Topic.insertMany(topics);
+    const topicsWithUser = topics.map(topic => ({
+      ...topic,
+      createdBy: userId
+    }));
+
+    const savedTopics = await Topic.insertMany(topicsWithUser);
     res.status(201).json(savedTopics);
   } catch (error) {
-    res.status(400).json({ message: 'Error creating topics', error });
+    res.status(400).json({ message: 'Error creating topics', error: (error as Error).message });
   }
 });
 
@@ -75,7 +83,7 @@ router.post('/bulk', async (req, res) => {
 router.post('/:topicId/read', authMiddleware, async (req: Request, res: Response) => {
   try {
     const { topicId } = req.params;
-    const userId = req.user.id;
+    const userId = req.userId; // Changed from req.user.id
 
     const user = await User.findById(userId);
     if (!user) {
@@ -105,7 +113,7 @@ router.post('/:topicId/read', authMiddleware, async (req: Request, res: Response
 // Kullanıcının oluşturduğu topicler'i getir
 router.get('/user', authMiddleware, async (req: Request, res: Response) => {
   try {
-    const userId = req.user.id;
+    const userId = req.userId; // Changed from req.user.id
     const topics = await Topic.find({ createdBy: userId });
     res.json(topics);
   } catch (error) {

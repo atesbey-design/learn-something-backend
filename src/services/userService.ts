@@ -49,7 +49,7 @@ export const userService = {
   removeFavoriteTopic: (userId: string, topicId: string): IUser | undefined => {
     const user = users.find(user => user.id === userId);
     if (user) {
-      user.favoriteTopics = user.favoriteTopics.filter(id => id !== topicId);
+      user.favoriteTopics = user.favoriteTopics.filter((id: string) => id !== topicId);
       return user;
     }
     return undefined;

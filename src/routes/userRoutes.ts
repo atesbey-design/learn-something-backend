@@ -7,9 +7,13 @@ import { authMiddleware } from '../middleware/auth';
 const router = express.Router();
 
 // Tüm kullanıcıları getir
-router.get('/', (req, res) => {
-  const users = User.find();
-  res.json(users);
+router.get('/', async (req: Request, res: Response) => {
+  try {
+    const users = await User.find();
+    res.json(users);
+  } catch (error) {
+    res.status(500).json({ message: 'Error fetching users', error: (error as Error).message });
+  }
 });
 
 // Belirli bir kullanıcıyı getir
@@ -47,7 +51,7 @@ router.post('/', async (req, res) => {
     const savedUser = await newUser.save() as any;
     const token = generateToken(savedUser._id);
     res.status(201).json({ user: savedUser, token });
-  } catch (error) {
+  } catch (error:any) {
     res.status(500).json({ message: 'Error creating user', error: error.message });
   }
 });
@@ -60,7 +64,7 @@ router.post('/login', async (req, res) => {
     if (!user) {
       return res.status(400).json({ message: 'Invalid credentials' });
     }
-    const token = generateToken(user._id);
+    const token = generateToken(user._id as string);
     res.json({ token, userId: user._id });
   } catch (error) {
     res.status(500).json({ message: 'Server error' });
@@ -68,43 +72,55 @@ router.post('/login', async (req, res) => {
 });
 
 // Kullanıcı güncelleme
-router.put('/:id', (req, res) => {
-  const updatedUser = User.findByIdAndUpdate(req.params.id, req.body, { new: true });
-  if (updatedUser) {
-    res.json(updatedUser);
-  } else {
-    res.status(404).json({ message: 'User not found' });
+router.put('/:id', async (req: Request, res: Response) => {
+  try {
+    const updatedUser = await User.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    if (updatedUser) {
+      res.json(updatedUser);
+    } else {
+      res.status(404).json({ message: 'User not found' });
+    }
+  } catch (error) {
+    res.status(500).json({ message: 'Error updating user', error: (error as Error).message });
   }
 });
 
 // Kullanıcı silme
-router.delete('/:id', (req, res) => {
-  const deletedUser = User.findByIdAndDelete(req.params.id);
-  if (deletedUser as any) {
-    res.status(204).send();
-  } else {
-    res.status(404).json({ message: 'User not found' });
+router.delete('/:id', async (req: Request, res: Response) => {
+  try {
+    const deletedUser = await User.findByIdAndDelete(req.params.id);
+    if (deletedUser) {
+      res.status(204).send();
+    } else {
+      res.status(404).json({ message: 'User not found' });
+    }
+  } catch (error) {
+    res.status(500).json({ message: 'Error deleting user', error: (error as Error).message });
   }
 });
 
 // Favori topic ekleme
-router.post('/:id/favorites/:topicId', (req, res) => {
-  const updatedUser = User.findByIdAndUpdate(
-    req.params.id,
-    { $addToSet: { favoriteTopics: req.params.topicId } },
-    { new: true }
-  );
-  if (updatedUser) {
-    res.json(updatedUser);
-  } else {
-    res.status(404).json({ message: 'User or topic not found' });
+router.post('/:id/favorites/:topicId', async (req: Request, res: Response) => {
+  try {
+    const updatedUser = await User.findByIdAndUpdate(
+      req.params.id,
+      { $addToSet: { favoriteTopics: req.params.topicId } },
+      { new: true }
+    );
+    if (updatedUser) {
+      res.json(updatedUser);
+    } else {
+      res.status(404).json({ message: 'User or topic not found' });
+    }
+  } catch (error) {
+    res.status(500).json({ message: 'Error adding favorite topic', error: (error as Error).message });
   }
 });
 
 // Favori topic çıkarma
 router.delete('/:userId/favorites/:topicId', authMiddleware, async (req: Request, res: Response) => {
   try {
-    const { userId, topicId } = req.params;
+    const { userId, topicId } = req.params ;
 
     const user = await User.findById(userId);
     if (!user) {
@@ -116,7 +132,7 @@ router.delete('/:userId/favorites/:topicId', authMiddleware, async (req: Request
       return res.status(404).json({ message: 'Topic not found' });
     }
 
-    const index = user.favoriteTopics.indexOf(topicId);
+    const index = user.favoriteTopics.findIndex(topic => topic.equals(topicId));
     if (index > -1) {
       user.favoriteTopics.splice(index, 1);
       await user.save();
@@ -142,7 +158,7 @@ router.delete('/:userId/favorites/:topicId', authMiddleware, async (req: Request
 });
 
 // Günlük topic okuma
-router.post('/:userId/read-topic', authMiddleware, async (req, res) => {
+router.post('/:userId/read-topic', authMiddleware, async (req: Request, res: Response) => {
   try {
     const user = await User.findById(req.params.userId);
     if (!user) {
@@ -170,7 +186,7 @@ router.post('/:userId/read-topic', authMiddleware, async (req, res) => {
       res.json({ message: 'You have reached your daily limit. Come back tomorrow for more!' });
     }
   } catch (error) {
-    res.status(500).json({ message: 'Error processing request', error });
+    res.status(500).json({ message: 'Error processing request', error: (error as Error).message });
   }
 });
 
